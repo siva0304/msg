@@ -1,0 +1,27 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment
+.env
+.env.local
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+
+# Session files (whatsapp-web.js LocalAuth)
+.session/
+package-lock.json
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Build artifacts
+dist/
+build/
