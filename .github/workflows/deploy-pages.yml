@@ -1,9 +1,9 @@
-name: Deploy Pizza Shop Frontend to GitHub Pages
+name: Deploy Frontend to GitHub Pages
 
 on:
   push:
     branches:
-      - main   # or "master" if that’s your default branch
+      - main   # ✅ change if your default branch is "master"
 
 permissions:
   contents: read
@@ -12,21 +12,19 @@ permissions:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout source
+      - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Upload only the "public" folder as the website content
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v4
 
-      - name: Upload public folder
+      - name: Upload frontend
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public   # 👈 only deploy static frontend
+          path: public   # ✅ deploy just public/
 
       - name: Deploy to GitHub Pages
         id: deployment

@@ -19,7 +19,7 @@ logs
 # Session files (whatsapp-web.js LocalAuth)
 .session/
 package-lock.json
-.wwebjs_auth/
+# .wwebjs_auth/
 .wwebjs_cache/
 
 # Build artifacts
