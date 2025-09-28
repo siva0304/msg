@@ -1,220 +1,113 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Pizza Factory — Order Online</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pizza Shop</title>
   <style>
-    body { font-family: system-ui, -apple-system, Roboto, "Segoe UI", Arial; margin:0; padding:0; background:#fff9f0; color:#222;}
-    header { background:#c62828; color:#fff; padding:20px; text-align:center; }
-    .container { max-width:960px; margin:20px auto; padding:10px; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
-    .card { background: #fff; border-radius:10px; padding:12px; box-shadow: 0 6px 18px rgba(0,0,0,0.06); }
-    .card h3 { margin:0 0 8px 0; }
-    .menu-footer { margin-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
-    .btn { background:#c62828; color:#fff; padding:8px 12px; border-radius:8px; border: none; cursor:pointer; }
-    .btn.secondary { background:#333; }
-    .cart { position: fixed; right: 18px; bottom: 18px; width: 320px; max-height:70vh; overflow:auto; }
-    .cart h4 { margin:0 0 8px 0; }
-    .cart-item { display:flex; justify-content:space-between; gap:8px; padding:6px 0; border-bottom:1px solid #eee;}
-    form.order-form { display:flex; flex-direction:column; gap:8px; }
-    input, textarea { padding:8px; border-radius:8px; border:1px solid #ddd; width:100%; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f8f8f8;
+    }
+    h1 {
+      text-align: center;
+    }
+    .menu {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .pizza {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      width: 200px;
+      text-align: center;
+    }
+    button {
+      background: #28a745;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #218838;
+    }
+    #status {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Pizza Factory — Place Order</h1>
-    <p>Fast. Hot. Delivered to WhatsApp.</p>
-  </header>
-
-  <div class="container">
-    <section>
-      <h2>Menu</h2>
-      <div class="grid" id="menu"></div>
-    </section>
-
-    <section style="margin-top:20px;">
-      <h2>Your Details</h2>
-      <form id="checkout" class="order-form" onsubmit="return false;">
-        <input id="custName" placeholder="Your name" required />
-        <input id="custPhone" placeholder="Phone (e.g. 919505564388)" required />
-        <textarea id="notes" placeholder="Notes (extra cheese, address, etc.)" rows="3"></textarea>
-        <div style="display:flex; gap:8px;">
-          <button id="placeOrder" class="btn">Place Order (Send WhatsApp)</button>
-          <button id="clearCart" class="btn secondary" type="button">Clear Cart</button>
-        </div>
-      </form>
-    </section>
-
-    <div style="margin-top:20px;">
-      <h2>WhatsApp Bot Status</h2>
-      <div id="status">Connecting...</div>
-      <div id="qrContainer" style="margin-top:12px;"></div>
+  <h1>🍕 Pizza Shop</h1>
+  <div class="menu">
+    <div class="pizza">
+      <h3>Margherita</h3>
+      <p>Classic cheese & tomato</p>
+      <p>₹250</p>
+      <button onclick="orderPizza('Margherita', 250)">Order</button>
+    </div>
+    <div class="pizza">
+      <h3>Pepperoni</h3>
+      <p>Cheese, tomato & pepperoni</p>
+      <p>₹300</p>
+      <button onclick="orderPizza('Pepperoni', 300)">Order</button>
+    </div>
+    <div class="pizza">
+      <h3>Veggie</h3>
+      <p>Loaded with vegetables</p>
+      <p>₹280</p>
+      <button onclick="orderPizza('Veggie', 280)">Order</button>
     </div>
   </div>
 
-  <div class="cart card" id="cartBox" style="display:none;">
-    <h4>Cart</h4>
-    <div id="cartItems"></div>
-    <div style="margin-top:8px;">
-      <strong>Total: ₹<span id="totalPrice">0</span></strong>
-    </div>
-  </div>
+  <div id="status"></div>
 
-  <!-- socket.io client from CDN -->
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <script>
-    // === Backend URL auto-detect ===
-    // If running on GitHub Pages, use your VPS backend URL
-    const BACKEND_URL = (window.location.hostname.includes("github.io"))
-      ? "https://msg-vku8.onrender.com"   // 👈 change this to your VPS backend URL
-      : ""; // empty = same origin (useful for local dev)
+    const BACKEND_URL = "https://msg-vku8.onrender.com"; // ✅ Your Render backend
 
-    // --- Sample menu data ---
-    const MENU = [
-      { id: "marg", name: "Margherita", price: 199 },
-      { id: "pep", name: "Pepperoni", price: 299 },
-      { id: "veg", name: "Veggie Supreme", price: 249 },
-      { id: "cheesy", name: "Cheesy Burst", price: 329 },
-      { id: "bbq", name: "BBQ Chicken", price: 349 }
-    ];
+    async function orderPizza(name, price) {
+      const customerName = prompt("Enter your name:");
+      const customerPhone = prompt("Enter your phone number:");
+      if (!customerName || !customerPhone) {
+        alert("Name and phone are required!");
+        return;
+      }
 
-    const cart = [];
-
-    function renderMenu() {
-      const el = document.getElementById("menu");
-      el.innerHTML = "";
-      MENU.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <h3>${item.name}</h3>
-          <div>₹${item.price}</div>
-          <div class="menu-footer">
-            <button onclick="addToCart('${item.id}')" class="btn">Add</button>
-          </div>
-        `;
-        el.appendChild(card);
-      });
-    }
-
-    function addToCart(id) {
-      const item = MENU.find(m => m.id === id);
-      if (!item) return;
-      const existing = cart.find(c => c.id === id);
-      if (existing) existing.qty++;
-      else cart.push({ ...item, qty: 1 });
-      renderCart();
-    }
-
-    function renderCart() {
-      const box = document.getElementById("cartBox");
-      const itemsEl = document.getElementById("cartItems");
-      const totalEl = document.getElementById("totalPrice");
-      if (!cart.length) { box.style.display = "none"; itemsEl.innerHTML = ""; totalEl.textContent = "0"; return; }
-      box.style.display = "block";
-      itemsEl.innerHTML = "";
-      let total = 0;
-      cart.forEach(ci => {
-        total += ci.price * ci.qty;
-        const div = document.createElement("div");
-        div.className = "cart-item";
-        div.innerHTML = `
-          <div>
-            <div><strong>${ci.name}</strong></div>
-            <div><small>₹${ci.price} x ${ci.qty}</small></div>
-          </div>
-          <div>
-            <button onclick="changeQty('${ci.id}', -1)">−</button>
-            <button onclick="changeQty('${ci.id}', +1)">+</button>
-          </div>
-        `;
-        itemsEl.appendChild(div);
-      });
-      totalEl.textContent = total;
-    }
-
-    function changeQty(id, delta) {
-      const idx = cart.findIndex(c => c.id === id);
-      if (idx === -1) return;
-      cart[idx].qty += delta;
-      if (cart[idx].qty <= 0) cart.splice(idx, 1);
-      renderCart();
-    }
-
-    document.getElementById("clearCart").addEventListener("click", () => {
-      cart.length = 0;
-      renderCart();
-    });
-
-    // ===== send order to backend =====
-    async function placeOrder() {
-      if (!cart.length) return alert("Cart is empty!");
-      const name = document.getElementById("custName").value.trim();
-      const phone = document.getElementById("custPhone").value.trim();
-      const notes = document.getElementById("notes").value.trim();
-
-      if (!name || !phone) return alert("Name and phone are required.");
-
-      const items = cart.map(i => ({ name: i.name, qty: i.qty, price: i.price }));
-      const total = items.reduce((s, it) => s + it.price * it.qty, 0);
+      const order = {
+        name: customerName,
+        phone: customerPhone,
+        item: name,
+        price: price
+      };
 
       try {
-        const response = await fetch(BACKEND_URL + "/api/order", {
+        document.getElementById("status").innerText = "⏳ Sending order...";
+        const response = await fetch(`${BACKEND_URL}/api/order`, {
           method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ phone, name, items, total, notes })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(order)
         });
+
         const data = await response.json();
-        if (data.success) {
-          alert("Order sent to WhatsApp! Order id: " + data.id);
-          cart.length = 0;
-          renderCart();
+        if (response.ok) {
+          document.getElementById("status").innerText = "✅ Order sent via WhatsApp!";
         } else {
-          alert("Failed to send order: " + (data.error || "unknown"));
+          document.getElementById("status").innerText = "❌ Error: " + (data.error || "Unknown error");
         }
       } catch (err) {
-        console.error(err);
-        alert("Network error: " + err.message);
+        document.getElementById("status").innerText = "⚠️ Network error: " + err.message;
       }
     }
-
-    document.getElementById("placeOrder").addEventListener("click", placeOrder);
-
-    // ===== Websocket to receive QR / status =====
-    (function initSocket() {
-      const statusEl = document.getElementById("status");
-      const qrContainer = document.getElementById("qrContainer");
-
-      const socket = (BACKEND_URL)
-        ? io(BACKEND_URL)  // GitHub Pages → connect to VPS
-        : io();            // Local dev → same origin
-
-      socket.on("connect", () => statusEl.textContent = "Connected to backend socket.");
-      socket.on("disconnect", () => statusEl.textContent = "Disconnected from backend socket.");
-
-      socket.on("qr", ({ dataUrl }) => {
-        statusEl.textContent = "Scan this QR with the WhatsApp account:";
-        qrContainer.innerHTML = `<img src="${dataUrl}" alt="QR" style="max-width:220px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.1)" />`;
-      });
-
-      socket.on("ready", () => {
-        statusEl.textContent = "WhatsApp Bot: Ready ✅";
-        qrContainer.innerHTML = "";
-      });
-
-      socket.on("auth_failure", (m) => {
-        statusEl.textContent = "Auth failure. Check server logs.";
-      });
-
-      socket.on("disconnected", (r) => {
-        statusEl.textContent = "WhatsApp disconnected: " + r;
-      });
-    })();
-
-    // Init menu/cart
-    renderMenu();
-    renderCart();
   </script>
 </body>
 </html>
